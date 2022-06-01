@@ -33,5 +33,6 @@ c = 0
 for i in range(len(grid)):
     for j in range(len(grid)):
         if grid[j][i]: c += 1
-with open('output1.txt', 'w') as f:
-    f.write(str(c))
+
+with open('output1.txt','w') as f:
+	f.write(str(c))

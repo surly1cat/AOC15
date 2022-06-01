@@ -1,52 +1,37 @@
-with open('input.txt') as f:
-    list = f.readlines()
-    dictionary = {}
-    while list:
-        del_elements = []
-        for i in range(len(list)):
-            line = list[i]
-            data = line.split()
-            if len(data) == 3 and data[0].isdigit():
-                dictionary[data[2]] = int(data[0])
-                del_elements.append(list[i])
-            elif len(data) == 3 and data[0] in dictionary:
-                dictionary[data[2]] = dictionary[data[0]]
-                del_elements.append(list[i])
-                dictionary[data[2]]
-            elif len(data) == 4 and data[1] in dictionary:
-                dictionary[data[3]] = ~ dictionary[data[1]]
-                del_elements.append(list[i])
-                dictionary[data[3]]
-            else:
-                if data[1] == 'AND':
-                    if data[0] in dictionary and data[2] in dictionary:
-                        dictionary[data[4]] = dictionary[data[0]] & dictionary[data[2]]
-                        del_elements.append(list[i])
-                        dictionary[data[4]]
-                    elif data[0].isdigit() and data[2] in dictionary:
-                        dictionary[data[4]] = int(data[0]) & dictionary[data[2]]
-                        del_elements.append(list[i])
-                        dictionary[data[4]]
-                elif data[1] == 'OR':
-                    if data[0] in dictionary and data[2] in dictionary:
-                        dictionary[data[4]] = dictionary[data[0]] | dictionary[data[2]]
-                        del_elements.append(list[i])
-                        dictionary[data[4]]
-                    elif data[0].isdigit() and data[2] in dictionary:
-                        dictionary[data[4]] = int(data[0]) | dictionary[data[2]]
-                        del_elements.append(list[i])
-                        dictionary[data[4]]
-                elif data[1] == 'RSHIFT' and data[0] in dictionary:
-                    dictionary[data[4]] = dictionary[data[0]] >> int(data[2])
-                    del_elements.append(list[i])
-                    dictionary[data[4]]
-                elif data[1] == 'LSHIFT' and data[0] in dictionary:
-                    dictionary[data[4]] = dictionary[data[0]] << int(data[2])
-                    del_elements.append(list[i])
-                    dictionary[data[4]]
+import operator as op
 
-        for i in del_elements:
-            list.remove(i)
+ops =   {None : lambda x: x,
+        "NOT" :   op.invert,
+        "OR" :   op.or_,
+        "AND" :   op.and_,
+        "RSHIFT":   op.rshift,
+        "LSHIFT" :   op.lshift
+        }
+
+gates = {}
+
+class Gate:
+
+    def __init__(self, oper = None, *inwire):
+        self.oper = oper
+        self.inv = [int(x) if x.isdigit() else x for x in inwire]
+        self.out = 0
+
+    def calc(self):
+        if not self.out:
+            self.out = ops[self.oper](*[x if isinstance(x, int) else gates[x].calc() for x in self.inv]) & 0xFFFF
+        return self.out
+
+
+with open('input.txt') as f:
+    for line in f:
+        in_d, out_d = line.strip().split('-> ')
+        in_d = in_d.split()
+
+        if len(in_d) == 1: gates[out_d] = Gate(None, in_d[0])
+        else: gates[out_d] = Gate(in_d.pop(-2), *in_d)
+
+    ans = gates['a'].calc()
 
 with open('output1.txt', 'w') as f:
-    f.write(str(dictionary['a']))
+    print(str(ans), file=f)

@@ -16,6 +16,7 @@ for i in line:
 
     if str(coord) not in visited:
         visited.append(str(coord))
+
 with open('output1.txt', 'w') as f:
     f.write(str(len(visited)))
 
